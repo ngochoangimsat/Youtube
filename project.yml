@@ -1,0 +1,19 @@
+name: YoutubeViewer
+options:
+  bundleIdPrefix: com.ngochoangimsat
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+targets:
+  YoutubeViewer:
+    type: application
+    platform: iOS
+    deploymentTarget: '16.0'
+    sources:
+      - YoutubeViewer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ngochoangimsat.youtubeviewer
+        INFOPLIST_KEY_CFBundleDisplayName: YouTube Viewer
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: '1'
