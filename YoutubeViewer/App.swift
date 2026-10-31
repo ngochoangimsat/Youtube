@@ -134,13 +134,41 @@ struct VideoRow: View {
     }
 }
 
+// Uses iOS 16 APIs so the deployment target can remain iOS 16.
+struct EmptyStateView: View {
+    let title: String
+    let systemImage: String
+    let description: Text
+
+    init(_ title: String, systemImage: String, description: Text) {
+        self.title = title
+        self.systemImage = systemImage
+        self.description = description
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 44))
+                .foregroundStyle(.secondary)
+            Text(title).font(.title2.bold())
+            description
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
 struct SavedView: View {
     @EnvironmentObject private var library: VideoLibrary
     let play: (Video) -> Void
     var body: some View {
         Group {
             if library.favorites.isEmpty {
-                ContentUnavailableView("Chưa có video", systemImage: "bookmark",
+                EmptyStateView("Chưa có video", systemImage: "bookmark",
                     description: Text("Nhấn Lưu video khi đang xem để thêm vào thư viện."))
             } else {
                 List {
@@ -174,7 +202,7 @@ struct SearchView: View {
     var body: some View {
         Group {
             if library.apiKey.isEmpty {
-                ContentUnavailableView("Cần API Key", systemImage: "key",
+                EmptyStateView("Cần API Key", systemImage: "key",
                     description: Text("Cấu hình YouTube Data API v3 trong tab Cài đặt để tìm kiếm. Tab Xem không cần API Key."))
             } else {
                 VStack(spacing: 0) {
@@ -232,9 +260,11 @@ struct SettingsView: View {
     @EnvironmentObject private var library: VideoLibrary
     var body: some View {
         Form {
-            Section("YouTube Data API v3") {
+            Section {
                 SecureField("Nhập API Key", text: $library.apiKey)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
+            } header: {
+                Text("YouTube Data API v3")
             } footer: {
                 Text("API Key chỉ cần cho chức năng tìm kiếm. Hạn chế quota và quyền truy cập trước khi phát hành.")
             }
@@ -271,7 +301,7 @@ struct PlayerView: View {
                 Spacer()
             }
             .navigationTitle("Đang phát").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .topBarTrailing) {
+            .toolbar { ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Đóng") { dismiss() }
             }}
         }
