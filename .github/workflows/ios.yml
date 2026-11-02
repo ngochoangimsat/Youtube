@@ -1,4 +1,4 @@
-name: Build iOS
+name: Build iPhone IPA
 on:
   push:
   pull_request:
@@ -8,15 +8,26 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project
         run: xcodegen generate
-      - name: Build Simulator
-        run: xcodebuild -project YoutubeViewer.xcodeproj -scheme YoutubeViewer -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
-      - name: Package app
-        run: cd build/Build/Products/Release-iphonesimulator && zip -r "$GITHUB_WORKSPACE/YoutubeViewer-Simulator.zip" YoutubeViewer.app
-      - uses: actions/upload-artifact@v4
+      - name: Build unsigned device app
+        run: |
+          set -euo pipefail
+          xcodebuild -project YoutubeViewer.xcodeproj -scheme YoutubeViewer -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          mkdir -p package/Payload
+          cp -R build/Build/Products/Release-iphoneos/YoutubeViewer.app package/Payload/
+          cd package
+          zip -qry ../YoutubeViewer-unsigned.ipa Payload
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
         with:
-          name: YoutubeViewer-Simulator
-          path: YoutubeViewer-Simulator.zip
+          name: YoutubeViewer-unsigned-IPA
+          path: YoutubeViewer-unsigned.ipa
+          if-no-files-found: error
